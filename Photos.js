@@ -96,7 +96,7 @@ var Photos = (function() {
                         album.photos.push(arr);
                     }
 
-                    if(counter === 10) {
+                    if(counter === 12) {
                         break;
                     }
 
