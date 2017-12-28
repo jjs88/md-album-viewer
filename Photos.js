@@ -2,7 +2,7 @@
 var Photos = (function() {
 
     // private vars
-    var currentPic, photos, albums;
+    var currentPic, photos, albums, currentThumbnail;
 
 
     // main functions
@@ -60,11 +60,11 @@ var Photos = (function() {
 
         let newPhotos = [];
 
-        console.log("length", albums.length);
+        // console.log("length", albums.length);
 
         for(var x = 0; x < albums.length; x++) { //cycle through albums
 
-            console.log(albums[x]);
+            // console.log(albums[x]);
 
             let counter = 0;
             let coverUsed = true;
@@ -79,8 +79,8 @@ var Photos = (function() {
                 
                 if(albums[x].id === photos[y].albumId) {
 
-                    console.log("photos", photos[y]);
-                    console.log("album", albums[x].id)
+                    // console.log("photos", photos[y]);
+                    // console.log("album", albums[x].id)
         
                     
                     // use first img as the cover img for the album
@@ -127,7 +127,7 @@ var Photos = (function() {
     }
 
 
-    function clickThumbnail(e) {
+    function clickAlbum(e) {
 
         e.preventDefault();
 
@@ -137,15 +137,64 @@ var Photos = (function() {
             if(currentPic) { //if there is an expanded pic, remove the class and store the current selected pic and add class
                 currentPic.classList.remove(removeCorrectExpandPhotoClass());
 
+                toggleThumbnails(e.target, currentPic);
+
                 currentPic = e.target;
                 e.target.classList.add(getCorrectExpandPhotoClass());
 
             } else { //first time being clicked, store DOM element and add photo class
                 currentPic = e.target;
                 e.target.classList.add(getCorrectExpandPhotoClass());
+                toggleThumbnails(e.target);
             }
         }
+
+        // click control for thumbnails
+        if(e.target.classList.contains('thumbnailImg')) {
+            // console.log("clicks", e.target);
+
+            e.target.nextElementSibling.classList.remove('hidden');
+
+            if(currentThumbnail) {
+                currentThumbnail.classList.remove('expand-album-cover-lg');
+                currentThumbnail = e.target.parentNode;
+                currentThumbnail.classList.add('expand-album-cover-lg');
+            } else {
+                console.log('works');
+                currentThumbnail = e.target.parentNode;
+                currentThumbnail.classList.add('expand-album-cover-lg')
+            }
+        }
+
+        // click control for exit on thumbnail
+        if(e.target.classList.contains('exit')) {
+
+            e.target.classList.add('hidden');
+            e.target.parentNode.classList.remove('expand-album-cover-lg');
+        }
     }
+
+    function exitThumbnail(e) {
+        
+    }
+
+
+
+    function toggleThumbnails(current, last) {
+
+        if(last) {
+            last = Array.from(last.children);
+            last.forEach(function(thumbnail) {
+                thumbnail.classList.add('hidden');
+            });
+        }
+
+        current = Array.from(current.children);
+        current.forEach(function(thumbnail) {
+            thumbnail.classList.remove('hidden');
+        });
+    }
+
 
     function getCorrectExpandPhotoClass() {
 
@@ -193,7 +242,9 @@ var Photos = (function() {
         for (var i = 0, ii = context.length; i < ii; i++) {
 
 
-            out += `<div class="thumbnail"> <img src="${options.fn(context[i])}"></div>`;
+            out += `<div class="thumbnail hidden"> <img src="${options.fn(context[i])}" class="thumbnailImg"> <span class="exit hidden">X</span></div>`;
+
+            // out += `<img src="${options.fn(context[i])}" class="thumbnail thumbnail-hidden"  <span class="exit">X</span>`;
         }
 
         return out;
@@ -244,7 +295,7 @@ var Photos = (function() {
             ] //needs to be wrapped in an array
 
 
-            let orderedPhotos = orderByAlbum(test, data[1]);
+            let orderedPhotos = orderByAlbum(data[0], data[1]);
 
             // console.log(orderedPhotos[0].photos[0].thumb);
             // console.log(orderedPhotos);
@@ -268,7 +319,7 @@ var Photos = (function() {
 
     function events() {
 
-        photos.addEventListener('click', clickThumbnail);
+        photos.addEventListener('click', clickAlbum);
 
     }
 

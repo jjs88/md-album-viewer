@@ -14,6 +14,7 @@ body {
     justify-content: center;
     align-items: center;
     margin: 10px 0;
+    position: relative;
     height:345px;
     width:345px;
     transition: .2s all ease-in;
@@ -53,11 +54,16 @@ body {
 }
 
 .thumbnail {
-    /* visibility: hidden; */
+    position: relative;
     margin:3px;
     padding:0;
     height:80px;
     width:80px;
+    /* transition: .2s all ease-in; */
+}
+
+.hidden {
+    visibility: hidden;
 }
 
 .thumbnail > img { 
@@ -67,6 +73,24 @@ body {
     width:100%;
     height:100%;
 }
+
+.expand-album-cover-lg {
+    margin:0;
+    position: fixed;
+    z-index: 300;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+}
+
+.exit {
+    position: absolute;
+    top:0;
+    right:0;
+    z-index: 400;
+}
+
 
 
 
