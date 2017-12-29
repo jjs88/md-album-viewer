@@ -195,7 +195,7 @@ var Photos = (function() {
                 currentThumbnail = e.target.parentNode;
                 currentThumbnail.classList.add('expand-album-cover-lg');
             } else {
-                console.log('works');
+               
                 currentThumbnail = e.target.parentNode;
                 currentThumbnail.classList.add('expand-album-cover-lg')
             }
@@ -204,7 +204,7 @@ var Photos = (function() {
         // click control for exit on thumbnail
         if(e.target.classList.contains('exit')) {
 
-            console.log('tester', e.target);
+            // console.log('tester', e.target);
 
             e.target.classList.add('hidden');
             e.target.parentNode.parentNode.classList.remove('expand-album-cover-lg');
