@@ -2,14 +2,14 @@
 var Photos = (function() {
 
     // private vars
-    var currentPic, photos, albums, currentThumbnail;
+    var currentPic, photos, albums, currentThumbnail, pages;
 
 
     // main functions
 
-    function displayData(template, photos) {
+    function displayData(template, albums) {
 
-        let html = createTemplate(template, photos);
+        let html = createTemplate(template, albums);
 
         $(document.body).append(html);
              
@@ -31,40 +31,74 @@ var Photos = (function() {
     }
 
 
+    function createTemplate(input, albums) {
+        let templateStr = $(input).html(); //create string
+        let template = Handlebars.compile(templateStr); //create template
 
-    function generateRandomNums() {
-
-        let numbers = [];
-
-        for(var x=0; x < 20; x++) {
-            numbers.push(Math.floor(Math.random() * 500) * 1);
-        }
-
-        return numbers;
+        return template({albums:albums}); //return html with injected data
     }
 
 
-    function getPhotos(randomNums, pics) {
+    function pagination(albums) {
+        
 
-        let photos = [];
+        let pages = [1];
+        let page = 1;
+        let perPage = 6;
+        let pageCnt = 0;
+        let albumsLength = albums.length;
 
-        randomNums.forEach(function(num) {
-            photos.push(pics[num]);
+
+        albums.forEach(function(album) {
+
+            if(pageCnt === perPage) { //reset for next page
+                pageCnt = 1;
+                page++;
+                album.page = page; //set current album to the new page
+                pages.push(page);
+
+            } else { //same page
+                album.page = page; //put page on the album object. will get injected using handlebars as data-page={{page}}
+                pageCnt++;
+            }
         })
 
-        return photos;
+
+        // createPages(pages);
+
+        return pages;
+
+        //return pages and then run createPages after the dom injection
+
+    }
+
+
+    function createPages(input) {
+
+        let pages = document.getElementsByClassName('pages')[0];
+
+        let element;
+        let text;
+
+        input.forEach(function(page) {
+            element = document.createElement('div');
+            element.classList.add('page');
+            text = document.createTextNode(page);
+            
+            element.appendChild(text);
+            pages.appendChild(element);
+        })
+
     }
 
 
     function orderByAlbum(albums, photos) {
 
-        let newPhotos = [];
-
-        // console.log("length", albums.length);
+        let newAlbums = [];
+        let page;
+        let albumCounter = 0;
 
         for(var x = 0; x < albums.length; x++) { //cycle through albums
-
-            // console.log(albums[x]);
 
             let counter = 0;
             let coverUsed = true;
@@ -73,6 +107,7 @@ var Photos = (function() {
             album.photos = [];
             album.coverImg;
             album.title = albums[x].title;
+
 
             for(var y = 0; y < photos.length; y++) { //cycle through photos
 
@@ -105,12 +140,12 @@ var Photos = (function() {
                 }
             }
 
-            newPhotos.push(album);
+            newAlbums.push(album);
         }
 
 
         //sort the photos by album
-        newPhotos.sort(function(a, b){
+        newAlbums.sort(function(a, b){
 
             var album1=a.title.toLowerCase(), 
                 album2=b.title.toLowerCase()
@@ -123,7 +158,7 @@ var Photos = (function() {
         })
 
 
-        return newPhotos;      
+        return newAlbums;      
     }
 
 
@@ -169,15 +204,12 @@ var Photos = (function() {
         // click control for exit on thumbnail
         if(e.target.classList.contains('exit')) {
 
+            console.log('tester', e.target);
+
             e.target.classList.add('hidden');
-            e.target.parentNode.classList.remove('expand-album-cover-lg');
+            e.target.parentNode.parentNode.classList.remove('expand-album-cover-lg');
         }
     }
-
-    function exitThumbnail(e) {
-        
-    }
-
 
 
     function toggleThumbnails(current, last) {
@@ -241,28 +273,50 @@ var Photos = (function() {
         var out = "";
         for (var i = 0, ii = context.length; i < ii; i++) {
 
+            out += `<div class="thumbnail hidden"> <img src="${options.fn(context[i])}" class="thumbnailImg"> 
+            <span class="hidden"> <i class="exit fa fa-times" aria-hidden="true"></i></span></div>`;
 
-            out += `<div class="thumbnail hidden"> <img src="${options.fn(context[i])}" class="thumbnailImg"> <span class="exit hidden">X</span></div>`;
-
-            // out += `<img src="${options.fn(context[i])}" class="thumbnail thumbnail-hidden"  <span class="exit">X</span>`;
+            // out += `<div class="thumbnail hidden"> <img src="${options.fn(context[i])}" class="thumbnailImg"> <span class="exit hidden">X</span></div>`;
         }
 
         return out;
-
     });
 
 
 
-    function createTemplate(input, albums) {
-        let templateStr = $(input).html(); //create string
-        let template = Handlebars.compile(templateStr); //create template
+    function displayPage(e) {
 
-        return template({albums:albums}); //return html with injected data
+        e.preventDefault();
+
+
+        if(e.target.classList.contains('page')) {
+
+            let page = Number(e.target.innerHTML);
+
+            document.querySelectorAll('.album').forEach(function(album) {
+
+                // console.log(album);
+                if (Number(album.getAttribute('data-page')) !== page) {
+                    album.style.display = 'none';
+                } else {
+                    album.style.display = 'flex';
+                }
+            })
+
+        }     
     }
 
 
+    function displayPageOne() { //display the first page albums on initial load
 
+        document.querySelectorAll('.album').forEach(function(album) {
 
+            // console.log(album);
+            if (Number(album.getAttribute('data-page')) !== 1) {
+                album.style.display = 'none';
+            };
+        })
+    }
 
 
 
@@ -276,43 +330,36 @@ var Photos = (function() {
 
         Promise.all(promises).then(function(data) { //first is albums, second is photos
 
-            let nums = generateRandomNums();
-            let photos = getPhotos(nums, data[1]);
-
-            // console.log(data[0]);
-            // console.log(photos);
-            // console.log(data[1]);
-            // console.log(data[0][1])
-
-
-            var test = [
-                data[0][0],
-                data[0][1],
-                data[0][2],
-                data[0][3],
-                data[0][4],
-                data[0][5]
-            ] //needs to be wrapped in an array
+            // var test = [
+            //     data[0][0],
+            //     data[0][1],
+            //     data[0][2],
+            //     data[0][3],
+            //     data[0][4],
+            //     data[0][5]
+            // ] //needs to be wrapped in an array
 
 
-            let orderedPhotos = orderByAlbum(data[0], data[1]);
+            let orderedAlbums = orderByAlbum(data[0], data[1]);
 
-            // console.log(orderedPhotos[0].photos[0].thumb);
-            // console.log(orderedPhotos);
+            //perform pagination (must do before data injection)
+            let pages = pagination(orderedAlbums);
 
-        
-
-            displayData('#album-template',orderedPhotos);
+            displayData('#album-template',orderedAlbums);
+            createPages(pages); //has to run after handlebars injects html template into DOM since .pages won't be available 
             addCoverImg(document.getElementsByClassName('album'));
+            displayPageOne();
             cacheDOM();
             events();
-        })    
+
+        }); 
     }
 
 
     function cacheDOM() {
 
         photos = document.getElementsByClassName('albums')[0];
+        pages = document.getElementsByClassName('pages')[0];
 
     }
 
@@ -320,6 +367,7 @@ var Photos = (function() {
     function events() {
 
         photos.addEventListener('click', clickAlbum);
+        pages.addEventListener('click', displayPage);
 
     }
 
