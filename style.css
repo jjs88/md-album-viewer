@@ -94,10 +94,14 @@ body {
 
 
 .pages {
-
+    
     display: flex;
+    /* position: fixed;
+    bottom:0; */
     justify-content: center;
-    margin-top:20px;
+    margin-top:80px;
+    /* width:25%;
+    left:38%; */
 }
 
 .page {
