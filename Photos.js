@@ -2,7 +2,7 @@
 var Photos = (function() {
 
     // private vars
-    var currentPic, photos, albums, currentThumbnail, pages;
+    var currentAlbum, photos, currentThumbnail, pages;
 
 
     // main functions
@@ -166,33 +166,32 @@ var Photos = (function() {
 
         e.preventDefault();
 
-        if(e.target.classList.contains('album')) { //only expand if the photo DIV is clicked
+        if(e.target.classList.contains('album')) { //only expand if the album DIV is clicked
 
 
-            if(currentPic) { //if there is an expanded pic, remove the class and store the current selected pic and add class
-                currentPic.classList.remove(removeCorrectExpandPhotoClass());
+            if(currentAlbum) { //if there is an expanded album, remove the class and store the current selected album and add class
+                currentAlbum.classList.remove(removeCorrectExpandPhotoClass());
 
-                toggleThumbnails(e.target, currentPic);
+                toggleAlbum(e.target, currentAlbum);
 
-                currentPic = e.target;
+                currentAlbum = e.target;
                 e.target.classList.add(getCorrectExpandPhotoClass());
 
-            } else { //first time being clicked, store DOM element and add photo class
-                currentPic = e.target;
+            } else { //first time being clicked, store DOM element and add album element
+                currentAlbum = e.target;
                 e.target.classList.add(getCorrectExpandPhotoClass());
-                toggleThumbnails(e.target);
+                toggleAlbum(e.target);
             }
         }
 
         // click control for thumbnails
         if(e.target.classList.contains('thumbnailImg')) {
-            // console.log("clicks", e.target);
 
-            e.target.nextElementSibling.classList.remove('hidden');
+            e.target.nextElementSibling.classList.remove('hidden'); //span class with X
 
             if(currentThumbnail) {
                 currentThumbnail.classList.remove('expand-album-cover-lg');
-                currentThumbnail = e.target.parentNode;
+                currentThumbnail = e.target.parentNode; //thumbnail element
                 currentThumbnail.classList.add('expand-album-cover-lg');
             } else {
                
@@ -204,33 +203,32 @@ var Photos = (function() {
         // click control for exit on thumbnail
         if(e.target.classList.contains('exit')) {
 
-            // console.log('tester', e.target);
-
-            e.target.classList.add('hidden');
-            e.target.parentNode.parentNode.classList.remove('expand-album-cover-lg');
+            e.target.parentNode.classList.add('hidden'); //span element on X icon
+            e.target.parentNode.parentNode.classList.remove('expand-album-cover-lg'); //album element
         }
     }
 
 
-    function toggleThumbnails(current, last) {
+    function toggleAlbum(current, last) {
 
         if(last) {
-            last = Array.from(last.children);
-            last.forEach(function(thumbnail) {
-                thumbnail.classList.add('hidden');
+
+            last = Array.from(last.children); 
+
+            last.forEach(function(album) { //hide all thumbnails
+                album.classList.add('hidden');
             });
         }
 
         current = Array.from(current.children);
-        current.forEach(function(thumbnail) {
-            thumbnail.classList.remove('hidden');
+        current.forEach(function(album) {
+            album.classList.remove('hidden'); //unhide all thumbnails for current selected album
         });
     }
 
 
-    function getCorrectExpandPhotoClass() {
+    function getCorrectExpandPhotoClass() { //get screen width and return proper class for the screen size
 
-        // console.log(window.innerWidth)
         if( window.innerWidth >= 534 && window.innerWidth < 1117) {
             return 'expandPhoto-mid'
         } else if (screen.width >= 1117) {
@@ -241,10 +239,10 @@ var Photos = (function() {
     }
 
 
-    function removeCorrectExpandPhotoClass() {
-        if(currentPic.classList.contains('expandPhoto-mid')) {
+    function removeCorrectExpandPhotoClass() { //return class to be removed
+        if(currentAlbum.classList.contains('expandPhoto-mid')) {
             return 'expandPhoto-mid';
-        } else if (currentPic.classList.contains('expandPhoto-lg')){
+        } else if (currentAlbum.classList.contains('expandPhoto-lg')){
             return 'expandPhoto-lg';
         } else {
             return "normal";
@@ -252,17 +250,13 @@ var Photos = (function() {
     }
 
 
-    function addCoverImg(photos) {
-
-        // console.log(photos)
+    function addCoverImg(albums) {
         
-        photos = Array.from(photos);
+        albums = Array.from(albums);
 
-        // console.log(photos);
-
-        photos.forEach(function(photo) {
+        albums.forEach(function(album) {
             // console.log(photo.getAttribute('data-coverImg'));
-            photo.style.backgroundImage = `url(${photo.getAttribute('data-coverImg')}`;
+            album.style.backgroundImage = `url(${album.getAttribute('data-coverImg')}`;
         })
     }
 
@@ -274,9 +268,8 @@ var Photos = (function() {
         for (var i = 0, ii = context.length; i < ii; i++) {
 
             out += `<div class="thumbnail hidden"> <img src="${options.fn(context[i])}" class="thumbnailImg"> 
-            <span class="hidden"> <i class="exit fa fa-times" aria-hidden="true"></i></span></div>`;
+            <span class="hidden"> <i class="exit fa fa-times"></i></span></div>`;
 
-            // out += `<div class="thumbnail hidden"> <img src="${options.fn(context[i])}" class="thumbnailImg"> <span class="exit hidden">X</span></div>`;
         }
 
         return out;
@@ -307,9 +300,11 @@ var Photos = (function() {
     }
 
 
-    function displayPageOne() { //display the first page albums on initial load
+    function displayPageOne(albums) { //display the first page albums on initial load
 
-        document.querySelectorAll('.album').forEach(function(album) {
+        albums = Array.from(albums);
+
+        albums.forEach(function(album) {
 
             // console.log(album);
             if (Number(album.getAttribute('data-page')) !== 1) {
@@ -330,6 +325,7 @@ var Photos = (function() {
 
         Promise.all(promises).then(function(data) { //first is albums, second is photos
 
+
             // var test = [
             //     data[0][0],
             //     data[0][1],
@@ -347,8 +343,11 @@ var Photos = (function() {
 
             displayData('#album-template',orderedAlbums);
             createPages(pages); //has to run after handlebars injects html template into DOM since .pages won't be available 
-            addCoverImg(document.getElementsByClassName('album'));
-            displayPageOne();
+
+            //cache album dom elements
+            let albums = document.getElementsByClassName('album');
+            addCoverImg(albums);
+            displayPageOne(albums);
             cacheDOM();
             events();
 
