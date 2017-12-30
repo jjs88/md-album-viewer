@@ -379,4 +379,5 @@ var Photos = (function() {
         init
     }
 
+    
 })();
