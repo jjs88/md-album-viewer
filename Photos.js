@@ -233,8 +233,8 @@ var Photos = (function() {
             return 'expandPhoto-mid'
         } else if (screen.width >= 1117) {
             return 'expandPhoto-lg'
-        } else {
-           return 'normal';
+        } else if (window.innerWidth < 534) {
+           return 'normal-size';
         }
     }
 
@@ -245,7 +245,7 @@ var Photos = (function() {
         } else if (currentAlbum.classList.contains('expandPhoto-lg')){
             return 'expandPhoto-lg';
         } else {
-            return "normal";
+            return "normal-size";
         }
     }
 
